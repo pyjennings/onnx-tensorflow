@@ -52,7 +52,19 @@ class ConvMixin(BroadcastMixin):
     dilations = node.attrs.get("dilations", [1] * spatial_size)
     strides = node.attrs.get("strides", [1] * spatial_size)
 
-    pads = node.attrs.get("pads", [0, 0] * spatial_size)
+    if "auto_pad" in node.attrs:
+      if node.attrs.get("auto_pad") == "SAME_UPPER":
+        output_shape = input_shape = x_shape
+        pads = [0] * spatial_size * 2
+        for i in range(spatial_size):
+          pad_shape = (
+              output_shape[i] - 1) * strides[i] + kernel_shape[i] - input_shape[i]
+          pads[i] = pad_shape // 2
+          pads[i + spatial_size] = pad_shape - pad_shape // 2
+      else:
+        raise ValueError("Not supported auto_pad attribute.")
+    else:
+      pads = node.attrs.get("pads", [0, 0] * spatial_size)
 
     if not transpose:
       x = PadMixin.get_padding_as_op(x, pads)
