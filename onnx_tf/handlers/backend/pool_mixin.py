@@ -66,7 +66,7 @@ class PoolMixin(object):
         if pad is PAD_TF_INCOMPATIBLE:
           return cls._compatibility_pool(node, input_dict, pooling_type)
       else:
-        if pads != [0] * spatial_size * 2:
+        if pads is not None and pads != [0] * spatial_size * 2:
           x = PadMixin.get_padding_as_op(x, pads)
         pad = "VALID"
     elif pooling_type == "MAX_WITH_ARGMAX":
